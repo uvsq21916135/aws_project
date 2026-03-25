@@ -1,12 +1,15 @@
 :root {
     --clear-cell: rgb(224, 205, 185);
     --dark-cell: rgb(104, 63, 42);
+
+    --background-color: rgb(100, 100, 100);
     --piece-color-P1: rgb(0, 0, 0);
     --piece-color-P2: rgb(255, 255, 255);
 }
 
 body {
     font-family: Arial, sans-serif;
+    background-color: var(--background-color);
 }
 
 #container {
@@ -18,6 +21,7 @@ body {
 table {
     border-collapse: collapse;
     border: 8px solid var(--dark-cell);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
 }
 
 td {
