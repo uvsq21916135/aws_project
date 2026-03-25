@@ -1,0 +1,36 @@
+:root {
+    --clear-cell: rgb(224, 205, 185);
+    --dark-cell: rgb(104, 63, 42);
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+#container {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+table {
+    border-collapse: collapse;
+    border: 8px solid var(--dark-cell);
+}
+
+td {
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.light-cell {
+    background-color: var(--clear-cell);
+}
+
+.dark-cell {
+    background-color: var(--dark-cell);
+}
