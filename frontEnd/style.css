@@ -1,6 +1,8 @@
 :root {
     --clear-cell: rgb(224, 205, 185);
     --dark-cell: rgb(104, 63, 42);
+    --piece-color-P1: rgb(0, 0, 0);
+    --piece-color-P2: rgb(255, 255, 255);
 }
 
 body {
@@ -33,4 +35,19 @@ td {
 
 .dark-cell {
     background-color: var(--dark-cell);
+}
+
+.piece {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+
+.piece-p1 {
+    background-color: var(--piece-color-P1);
+}
+
+.piece-p2 {
+    background-color: var(--piece-color-P2);
 }
