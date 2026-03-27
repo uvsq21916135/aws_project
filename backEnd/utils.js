@@ -10,10 +10,6 @@ function removePiece(board, row, col) {
     board[row][col] = 0;
 }
 
-function transformIntoQueen(board, row, col, player) {
-    if (player === 1) {
-        board[row][col] = 3;
-    } else if (player === 2) {
-        board[row][col] = 4;
-    }
+function becomeEldenLord(board, row, col, player) {
+    board[row][col] = player + 2;
 }
