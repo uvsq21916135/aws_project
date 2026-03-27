@@ -29,6 +29,7 @@ function isInBoard(row, col){
 }
 
 function isPlayerPiece(board, row, col, player){
+    // Accepte le pion simple OU la Dame (= player + 2)
     return board[row][col] === player || board[row][col] === player + 2;
 }
 
@@ -44,10 +45,12 @@ function isGoodDirection(startRow, startCol, endRow, endCol, player) {
 
     const isDame = board[startRow][startCol] === player + 2;
 
+    // Si c'est une Dame, elle peut avancer OU reculer (donc +1 ou -1)
     if (isDame) {
         return Math.abs(endRow - startRow) === 1;
     }
 
+    // Pion normal
     if (player === 1) {
         return endRow === startRow - 1;
     } 
@@ -73,16 +76,20 @@ function isAEatMove(board, startRow, startCol, endRow, endCol, player){
 
     const opponentOwner1 = (player === 1) ? 2 : 1;
     const opponentOwner2 = (player === 1) ? 4 : 3;
+    // La victime doit être soit un pion normal ennemi, soit une dame ennemie
     if (board[victimRow][victimCol] !== opponentOwner1 && board[victimRow][victimCol] !== opponentOwner2) {
         return false;
     }
 
+    // Vérification de la direction selon le type de pièce
     const isDame = board[startRow][startCol] === player + 2;
     
+    // Si c'est une Dame, elle peut manger dans n'importe quel sens
     if (isDame) {
         return Math.abs(endRow - startRow) === 2;
     }
 
+    // Pion normal
     if (player === 1) {
         return endRow === startRow - 2;
     } 
