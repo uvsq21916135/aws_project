@@ -1,6 +1,9 @@
 const ROWS = 10;
 const COLS = 10;
+
 let board = Array(ROWS).fill(0).map(() => Array(COLS).fill(0));
+let currentPlayer = 1;
+
 
 //On partirai sur un truc genre:
 //0 : case vide
