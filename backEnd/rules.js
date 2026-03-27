@@ -7,13 +7,16 @@ function isValidMove(startRow, startCol, endRow, endCol, player){
 
     } else if (!isPlayerPiece(board, startRow, startCol, player)){
         return false
-
-    } else if (!isGoodDirection(startRow, startCol, endRow, endCol, player)){
-        return false
-
-    } else {
-        return true
     }
+    
+    const isValidSimple = isGoodDirection(startRow, startCol, endRow, endCol, player);
+    const isValidEat = isAEatMove(board, startRow, startCol, endRow, endCol, player);
+
+    if (!isValidSimple && !isValidEat) {
+        return false;
+    }
+
+    return true;
 }
 
 function isFreeCell(board, row, col){
@@ -45,6 +48,34 @@ function isGoodDirection(startRow, startCol, endRow, endCol, player) {
     
     if (player === 2) {
         return endRow === startRow + 1;
+    }
+
+    return false;
+}
+
+function isAEatMove(board, startRow, startCol, endRow, endCol, player){
+    const isMovingLeft = (endCol === startCol - 2);
+    const isMovingRight = (endCol === startCol + 2);
+    const isValidColumnMove = isMovingLeft || isMovingRight;
+
+    if (!isValidColumnMove) {
+        return false;
+    }
+
+    const victimRow = (startRow + endRow) / 2;
+    const victimCol = (startCol + endCol) / 2;
+
+    const opponentOwner = (player === 1) ? 2 : 1;
+    if (board[victimRow][victimCol] !== opponentOwner) {
+        return false;
+    }
+
+    if (player === 1) {
+        return endRow === startRow - 2;
+    } 
+    
+    if (player === 2) {
+        return endRow === startRow + 2;
     }
 
     return false;
