@@ -80,3 +80,13 @@ function isAEatMove(board, startRow, startCol, endRow, endCol, player){
 
     return false;
 }
+
+function arrivingAtLastRow(endRow, player){
+    if (player === 1 && endRow === 0){
+        return true;
+    } else if (player === 2 && endRow === 9){
+        return true;
+    } else {
+        return false;
+    }
+}
