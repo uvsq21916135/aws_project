@@ -27,6 +27,10 @@ function initBoard() {
 
 function makeMove(startRow, startCol, endRow, endCol){
     if (isValidMove(startRow, startCol, endRow, endCol, currentPlayer)){
+        if (isAEatMove(startRow, startCol, endRow, endCol, currentPlayer)){
+            removePiece(board, (startRow + endRow) / 2, (startCol + endCol) / 2);
+        }
+
         board[startRow][startCol] = 0;
         board[endRow][endCol] = currentPlayer;
         switchPlayer();
