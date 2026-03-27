@@ -4,7 +4,6 @@ const COLS = 10;
 let board = Array(ROWS).fill(0).map(() => Array(COLS).fill(0));
 let currentPlayer = 1;
 
-
 //On partirai sur un truc genre:
 //0 : case vide
 //1 : pion joueur 1
@@ -23,6 +22,14 @@ function initBoard() {
                 }
             }
         }
+    }
+}
+
+function makeMove(startRow, startCol, endRow, endCol){
+    if (isValidMove(startRow, startCol, endRow, endCol, currentPlayer)){
+        board[startRow, startCol] = 0;
+        board[endRow, endCol] = currentPlayer;
+        switchPlayer();
     }
 }
 
