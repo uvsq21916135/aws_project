@@ -21,7 +21,8 @@ function isFreeCell(board, row, col){
 }
 
 function isInBoard(row, col){
-    return row >= 0 && row < 9 && col >= 0 && col < 9;
+    return (row >= 0 && row < 9)
+        && (col >= 0 && col < 9);
 }
 
 function isPlayerPiece(board, row, col, player){
