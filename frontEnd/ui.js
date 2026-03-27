@@ -1,3 +1,5 @@
+let selectedPiece = null;
+
 function render() {
     const container = document.querySelector('#container');
     container.innerHTML = '';
@@ -15,6 +17,11 @@ function render() {
                 td.className = 'dark-cell';
             }
 
+            if (selectedPiece && selectedPiece.row === row && selectedPiece.col === col) {
+                td.style.border = "3px solid #ffeb3b";
+                td.style.boxSizing = "border-box";
+            }
+
             if (board[row][col] === 1) {
                 const piece = document.createElement('div');
                 piece.className = 'piece piece-p1';
@@ -25,11 +32,28 @@ function render() {
                 td.appendChild(piece);
             }
 
+            td.addEventListener('click', () => {
+                handleCellClick(row, col);
+            });
+
             tr.appendChild(td);
         }
         table.appendChild(tr);
     }
     container.appendChild(table);
+}
+
+function handleCellClick(row, col) {
+    if (!selectedPiece) {
+        if (board[row][col] === currentPlayer) {
+            selectedPiece = { row, col };
+            render();
+        }
+    } else {
+        makeMove(selectedPiece.row, selectedPiece.col, row, col);
+        selectedPiece = null;
+        render();
+    }
 }
 
 render();

@@ -1,4 +1,4 @@
-function isValidMove(startRow, endRow, startCol, endCol, player){
+function isValidMove(startRow, startCol, endRow, endCol, player){
     if (!isInBoard(endRow, endCol)){
         return false
 
@@ -8,7 +8,7 @@ function isValidMove(startRow, endRow, startCol, endCol, player){
     } else if (!isPlayerPiece(board, startRow, startCol, player)){
         return false
 
-    } else if (!isGoodDirection(startRow, endRow, startCol, endCol, player)){
+    } else if (!isGoodDirection(startRow, startCol, endRow, endCol, player)){
         return false
 
     } else {
@@ -21,15 +21,15 @@ function isFreeCell(board, row, col){
 }
 
 function isInBoard(row, col){
-    return (row >= 0 && row < 9)
-        && (col >= 0 && col < 9);
+    return (row >= 0 && row < ROWS)
+        && (col >= 0 && col < COLS);
 }
 
 function isPlayerPiece(board, row, col, player){
     return board[row][col] === player
 }
 
-function isGoodDirection(startRow, endRow, startCol, endCol, player) {
+function isGoodDirection(startRow, startCol, endRow, endCol, player) {
     const isMovingLeft = (endCol === startCol - 1);
     const isMovingRight = (endCol === startCol + 1);
 

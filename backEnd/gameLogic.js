@@ -27,8 +27,8 @@ function initBoard() {
 
 function makeMove(startRow, startCol, endRow, endCol){
     if (isValidMove(startRow, startCol, endRow, endCol, currentPlayer)){
-        board[startRow, startCol] = 0;
-        board[endRow, endCol] = currentPlayer;
+        board[startRow][startCol] = 0;
+        board[endRow][endCol] = currentPlayer;
         switchPlayer();
     }
 }
