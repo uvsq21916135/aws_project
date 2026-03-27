@@ -31,12 +31,13 @@ function makeMove(startRow, startCol, endRow, endCol){
             removePiece(board, (startRow + endRow) / 2, (startCol + endCol) / 2);
         }
 
+        board[startRow][startCol] = 0;
+        board[endRow][endCol] = currentPlayer;
+
         if (arrivingAtLastRow(endRow, currentPlayer)){
             becomeEldenLord(board, endRow, endCol, currentPlayer);
         }
     
-        board[startRow][startCol] = 0;
-        board[endRow][endCol] = currentPlayer;
         switchPlayer();
     }
 }

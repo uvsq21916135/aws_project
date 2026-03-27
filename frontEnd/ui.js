@@ -22,13 +22,15 @@ function render() {
                 td.style.boxSizing = "border-box";
             }
 
-            if (board[row][col] === 1) {
+            if (board[row][col] === 1 || board[row][col] === 3) {
                 const piece = document.createElement('div');
                 piece.className = 'piece piece-p1';
+                if (board[row][col] === 3) piece.classList.add('dame');
                 td.appendChild(piece);
-            } else if (board[row][col] === 2) {
+            } else if (board[row][col] === 2 || board[row][col] === 4) {
                 const piece = document.createElement('div');
                 piece.className = 'piece piece-p2';
+                if (board[row][col] === 4) piece.classList.add('dame');
                 td.appendChild(piece);
             }
 
@@ -45,7 +47,7 @@ function render() {
 
 function handleCellClick(row, col) {
     if (!selectedPiece) {
-        if (board[row][col] === currentPlayer) {
+        if (board[row][col] === currentPlayer || board[row][col] === currentPlayer + 2) {
             selectedPiece = { row, col };
             render();
         }

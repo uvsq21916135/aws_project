@@ -56,3 +56,9 @@ td {
 .piece-p2 {
     background-color: var(--piece-color-P2);
 }
+
+.piece.dame {
+    border: 3px solid gold;
+    position: relative;
+    box-sizing: border-box;
+}
