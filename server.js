@@ -1,8 +1,11 @@
-const path = require("path");
 const express = require("express");
-const fs = require("fs");
 const app = express();
+
+const WebSocket = require("ws");
+const fs = require("fs");
+const path = require("path");
 const mongoose = require("mongoose");
+
 
 const PORT = 3000;
 const https = require("https");
@@ -27,8 +30,13 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "frontEnd", "Plate.html"));
 });
 
-const httpsServer = https.createServer(credentials, app);
+const DamesPointcom = https.createServer(credentials, app);
 
-httpsServer.listen(PORT, () => {
+DamesPointcom.listen(PORT, () => {
     console.log(`https server started on port ${PORT}`);
+});
+
+const wss = new WebSocket.Server({ server: DamesPointcom });
+wss.on("connection", (ws) => {
+    console.log("Bienvenue sur DamesPoint.com");
 });
