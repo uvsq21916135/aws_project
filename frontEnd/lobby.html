@@ -52,22 +52,59 @@
             document.querySelector(".auth-wrapper").style.display = "none";
             document.getElementById("lobby").style.display = "flex";
 
+            const myUsername = document.getElementById("log-username").value || document.getElementById("reg-username").value;
+
             const response = await fetch("/users");
             const users = await response.json();
             
             const userList = document.getElementById("user-list");
             userList.innerHTML = "";
-            users.forEach(user => {
-                const li = document.createElement("li");
-                li.textContent = user.username;
-                userList.appendChild(li);
-            });
 
             const socket = new WebSocket("wss://" + window.location.host);
 
             socket.onopen = () => {
-                socket.send(JSON.stringify({ type: "IDENTIFY", username: document.getElementById("log-username").value }));
+                socket.send(JSON.stringify({ type: "IDENTIFY", username: myUsername }));
             };
+
+            socket.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                
+                if (msg.type === "INCOMING_CHALLENGE") {
+                    const accept = confirm(msg.from + " veut vous défier ! Acceptez-vous le duel ?");
+                    if (accept) {
+                        socket.send(JSON.stringify({ type: "ACCEPT_CHALLENGE", to: msg.from, from: myUsername }));
+                        alert("Défi accepté ! C'est l'heure du duel !");
+                        // TODO: Redirection sur le plateau !
+                    } else {
+                        socket.send(JSON.stringify({ type: "DECLINE_CHALLENGE", to: msg.from, from: myUsername }));
+                    }
+                } else if (msg.type === "CHALLENGE_ACCEPTED") {
+                    alert(msg.from + " a accepté votre défi ! C'est l'heure du duel !");
+                    // TODO: Redirection sur le plateau !
+                } else if (msg.type === "CHALLENGE_DECLINED") {
+                    alert(msg.from + " est une poule mouillé.");
+                }
+            };
+
+            users.forEach(user => {
+                const li = document.createElement("li");
+                li.style.marginBottom = "10px";
+                li.textContent = user.username + " (Victoires: " + user.wins + ")";
+                
+                if (user.username !== myUsername) {
+                    const duelButton = document.createElement("button");
+                    duelButton.textContent = "Défier";
+                    duelButton.style.marginLeft = "15px";
+                    duelButton.style.padding = "5px 10px";
+                    duelButton.style.width = "auto";
+                    duelButton.onclick = () => {
+                        socket.send(JSON.stringify({ type: "CHALLENGE", to: user.username, from: myUsername }));
+                        alert("Défi envoyé à " + user.username + "... en attente de réponse !");
+                    };
+                    li.appendChild(duelButton);
+                }
+                userList.appendChild(li);
+            });
         }
         
         async function authenticate(endpoint, user, pass, displayId) {
