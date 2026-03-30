@@ -46,14 +46,25 @@ function render() {
 }
 
 function handleCellClick(row, col) {
+    if (currentRaflePiece) {
+        makeMove(currentRaflePiece.row, currentRaflePiece.col, row, col);
+        selectedPiece = currentRaflePiece ? { row: currentRaflePiece.row, col: currentRaflePiece.col } : null;
+        render();
+        return;
+    }
+
     if (!selectedPiece) {
         if (board[row][col] === currentPlayer || board[row][col] === currentPlayer + 2) {
             selectedPiece = { row, col };
             render();
         }
     } else {
-        makeMove(selectedPiece.row, selectedPiece.col, row, col);
-        selectedPiece = null;
+        if (row === selectedPiece.row && col === selectedPiece.col) {
+            selectedPiece = null;
+        } else {
+            makeMove(selectedPiece.row, selectedPiece.col, row, col);
+            selectedPiece = currentRaflePiece ? { row: currentRaflePiece.row, col: currentRaflePiece.col } : null;
+        }
         render();
     }
 }

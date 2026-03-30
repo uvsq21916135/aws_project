@@ -25,22 +25,37 @@ function initBoard() {
     }
 }
 
-function makeMove(startRow, startCol, endRow, endCol){
-    if (isValidMove(startRow, startCol, endRow, endCol, currentPlayer)){
-        const pieceMoved = board[startRow][startCol];
+let currentRaflePiece = null;
 
-        if (isAEatMove(board, startRow, startCol, endRow, endCol, currentPlayer)){
-            removePiece(board, (startRow + endRow) / 2, (startCol + endCol) / 2);
-        }
+function makeMove(startRow, startCol, endRow, endCol){
+    if (isValidMove(board, startRow, startCol, endRow, endCol, currentPlayer, currentRaflePiece)){
+        const pieceMoved = board[startRow][startCol];
+        const eatMove = isAEatMove(board, startRow, startCol, endRow, endCol, currentPlayer);
 
         board[startRow][startCol] = 0;
         board[endRow][endCol] = pieceMoved;
 
+        let madeJump = false;
+        if (eatMove){
+            removePiece(board, eatMove.row, eatMove.col);
+            madeJump = true;
+        }
+
+        let promoted = false;
         if (pieceMoved === currentPlayer && arrivingAtLastRow(endRow, currentPlayer)){
-            becomeEldenLord(board, endRow, endCol, currentPlayer);
+            let endsTurn = !madeJump || !hasPossibleJump(board, currentPlayer, endRow, endCol);
+            if (endsTurn) {
+                becomeEldenLord(board, endRow, endCol, currentPlayer);
+                promoted = true;
+            }
         }
     
-        switchPlayer();
+        if (madeJump && !promoted && hasPossibleJump(board, currentPlayer, endRow, endCol)) {
+            currentRaflePiece = { row: endRow, col: endCol };
+        } else {
+            currentRaflePiece = null;
+            switchPlayer();
+        }
     }
 }
 
