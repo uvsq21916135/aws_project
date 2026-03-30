@@ -9,11 +9,10 @@ const userSchema = new mongoose.Schema({
     ratio: { type: Number, default: 0 },
 });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
     if (this.isModified("password")) {
         this.password = await argon2.hash(this.password);
     }
-    next();
 });
 
 userSchema.methods.verifyPassword = async function (password) {

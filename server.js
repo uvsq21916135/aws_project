@@ -47,7 +47,8 @@ app.post("/api/register", async (req, res) => {
         res.status(201).json({ message: "Utilisateur créé avec succès" });
 
     } catch (error) {
-        res.status(500).json({ error: "Erreur interne du serveur" });
+        console.error("Erreur Inscription:", error);
+        res.status(500).json({ error: error.message || "Erreur interne du serveur" });
     }
 });
 
