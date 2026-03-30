@@ -16,7 +16,7 @@ const privateKey = fs.readFileSync("key.pem");
 const certificate = fs.readFileSync("cert.pem");
 
 const credentials = { key: privateKey, cert: certificate };
-const uri = "mongodb://thibault971:kyrCo4-gibseg-nebsoh@ac-ggrzodb-shard-00-00.gpzde5z.mongodb.net:27017,ac-ggrzodb-shard-00-01.gpzde5z.mongodb.net:27017,ac-ggrzodb-shard-00-02.gpzde5z.mongodb.net:27017/?ssl=true&replicaSet=atlas-juz2qs-shard-0&authSource=admin&appName=AWS";
+const uri = "mongodb+srv://thibault971:gAjqyb-zidca3-cakbuj@aws.gpzde5z.mongodb.net/?appName=AWS";
 
 mongoose.connect(uri)
     .then(() => {
