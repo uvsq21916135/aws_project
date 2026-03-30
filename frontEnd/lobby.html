@@ -62,6 +62,12 @@
                 li.textContent = user.username;
                 userList.appendChild(li);
             });
+
+            const socket = new WebSocket("wss://" + window.location.host);
+
+            socket.onopen = () => {
+                socket.send(JSON.stringify({ type: "IDENTIFY", username: document.getElementById("log-username").value }));
+            };
         }
         
         async function authenticate(endpoint, user, pass, displayId) {

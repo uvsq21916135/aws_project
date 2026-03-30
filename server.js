@@ -89,6 +89,20 @@ DamesPointcom.listen(PORT, () => {
 });
 
 const wss = new WebSocket.Server({ server: DamesPointcom });
+const onlinePlayers = new Map();
+
 wss.on("connection", (ws) => {
-    console.log("Bienvenue sur DamesPoint.com");
+    //debug
+    //console.log("Bienvenue sur DamesPoint.com");
+
+    ws.on("message", (message) => {
+        const data = JSON.parse(message);
+        if (data.type === "IDENTIFY") {
+            onlinePlayers.set(data.username, ws);
+
+            //debug
+            //console.log("Joueur connecté : ", data.username);
+
+        }
+    });
 });
