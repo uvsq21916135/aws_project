@@ -55,6 +55,13 @@ function makeMove(startRow, startCol, endRow, endCol){
         } else {
             currentRaflePiece = null;
             switchPlayer();
+
+            if (!hasPossibleMove(board, currentPlayer)) {
+                const winner = currentPlayer === 1 ? 2 : 1;
+                setTimeout(() => {
+                    alert('Fin de la partie ! Le Joueur ' + winner + ' gagne.');
+                }, 100);
+            }
         }
     }
 }

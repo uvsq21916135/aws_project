@@ -147,3 +147,31 @@ function arrivingAtLastRow(endRow, player){
     if (player === 2 && endRow === 9) return true;
     return false;
 }
+
+function hasPossibleMove(board, player) {
+    if (hasPossibleJump(board, player)) return true;
+
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (isPlayerPiece(board, r, c, player)) {
+                const isDame = board[r][c] === player + 2;
+                const maxDist = isDame ? 9 : 1;
+                const directions = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+
+                for (let [dr, dc] of directions) {
+                    for (let dist = 1; dist <= maxDist; dist++) {
+                        const endRow = r + dr * dist;
+                        const endCol = c + dc * dist;
+                        
+                        if (isInBoard(endRow, endCol) && isFreeCell(board, endRow, endCol)) {
+                            if (isGoodDirection(board, r, c, endRow, endCol, player)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
