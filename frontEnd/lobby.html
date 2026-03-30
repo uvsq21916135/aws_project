@@ -42,7 +42,28 @@
         </div>
     </div>
 
+    <div id="lobby" class="auth-wrapper" style="display: none;">
+        <h2>Liste des joueurs</h2>
+        <ul id="user-list" style="list-style: none;"></ul>
+    </div>
+
     <script>
+        async function showLobby() {
+            document.querySelector(".auth-wrapper").style.display = "none";
+            document.getElementById("lobby").style.display = "flex";
+
+            const response = await fetch("/users");
+            const users = await response.json();
+            
+            const userList = document.getElementById("user-list");
+            userList.innerHTML = "";
+            users.forEach(user => {
+                const li = document.createElement("li");
+                li.textContent = user.username;
+                userList.appendChild(li);
+            });
+        }
+        
         async function authenticate(endpoint, user, pass, displayId) {
             const display = document.getElementById(displayId);
             display.textContent = "Traitement...";
@@ -63,6 +84,9 @@
                 } else {
                     display.textContent = data.message;
                     display.className = "feedback success";
+                    if (endpoint === "/login") {
+                        showLobby();
+                    }
                 }
             } catch (err) {
                 display.textContent = "Erreur de connexion au serveur.";
@@ -72,7 +96,7 @@
 
         document.getElementById("regForm").addEventListener("submit", (e) => {
             e.preventDefault();
-            authenticate("/api/register", 
+            authenticate("/register", 
                 document.getElementById("reg-username").value, 
                 document.getElementById("reg-password").value, 
                 "reg-feedback");
@@ -80,7 +104,7 @@
 
         document.getElementById("logForm").addEventListener("submit", (e) => {
             e.preventDefault();
-            authenticate("/api/login", 
+            authenticate("/login", 
                 document.getElementById("log-username").value, 
                 document.getElementById("log-password").value, 
                 "log-feedback");

@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "frontEnd", "lobby.html"));
 });
 
-app.post("/api/register", async (req, res) => {
+app.post("/register", async (req, res) => {
     try {
         const { username, password } = req.body;
         const existingUser = await User.findOne({ username });
@@ -52,7 +52,7 @@ app.post("/api/register", async (req, res) => {
     }
 });
 
-app.post("/api/login", async (req, res) => {
+app.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await User.findOne({ username });
@@ -68,6 +68,15 @@ app.post("/api/login", async (req, res) => {
         }
 
         res.status(200).json({ message: "Connexion réussie", username: user.username });
+    } catch (error) {
+        res.status(500).json({ error: "Erreur interne du serveur" });
+    }
+});
+
+app.get("/users", async (req, res) => {
+    try {
+        const users = await User.find({}).select("username wins losses ratio");
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ error: "Erreur interne du serveur" });
     }
