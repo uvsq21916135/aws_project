@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, "frontEnd")));
 app.use("/backEnd", express.static(path.join(__dirname, "backEnd")));
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontEnd", "Plate.html"));
+    res.sendFile(path.join(__dirname, "frontEnd", "lobby.html"));
 });
 
 app.post("/api/register", async (req, res) => {

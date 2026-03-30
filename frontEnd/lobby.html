@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dames Online - Authentication</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    
+</head>
+<body>
+
+    <div class="auth-wrapper">
+
+        <div class="auth-section">
+            <h2>Inscription</h2>
+            <p>Nouveau joueur ? Créez un profil.</p>
+            <form id="regForm">
+                <div class="form-group">
+                    <input type="text" id="reg-username" placeholder="Choisissez un pseudo" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="reg-password" placeholder="Mot de passe" required>
+                </div>
+                <button type="submit">Créer mon compte</button>
+                <div id="reg-feedback" class="feedback"></div>
+            </form>
+        </div>
+
+
+        <div class="auth-section">
+            <h2>Connexion</h2>
+            <p>Déjà enregistré ? Connectez-vous.</p>
+            <form id="logForm">
+                <div class="form-group">
+                    <input type="text" id="log-username" placeholder="Pseudo" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="log-password" placeholder="Mot de passe" required autocomplete="current-password">
+                </div>
+                <button type="submit">Se connecter</button>
+                <div id="log-feedback" class="feedback"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function authenticate(endpoint, user, pass, displayId) {
+            const display = document.getElementById(displayId);
+            display.textContent = "Traitement...";
+            display.className = "feedback";
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    display.textContent = data.error || "Erreur inconnue";
+                    display.className = "feedback error";
+                } else {
+                    display.textContent = data.message;
+                    display.className = "feedback success";
+                }
+            } catch (err) {
+                display.textContent = "Erreur de connexion au serveur.";
+                display.className = "feedback error";
+            }
+        }
+
+        document.getElementById("regForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            authenticate("/api/register", 
+                document.getElementById("reg-username").value, 
+                document.getElementById("reg-password").value, 
+                "reg-feedback");
+        });
+
+        document.getElementById("logForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            authenticate("/api/login", 
+                document.getElementById("log-username").value, 
+                document.getElementById("log-password").value, 
+                "log-feedback");
+        });
+    </script>
+</body>
+</html>
