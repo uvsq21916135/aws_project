@@ -54,11 +54,13 @@
     <div id="container" style="display: none;"></div>
 
     <script>
+        window.myUsername = null;
+
         async function showLobby() {
             document.querySelector(".auth-wrapper").style.display = "none";
             document.getElementById("lobby").style.display = "flex";
 
-            const myUsername = document.getElementById("log-username").value || document.getElementById("reg-username").value;
+            window.myUsername = document.getElementById("log-username").value || document.getElementById("reg-username").value;
 
             const response = await fetch("/users");
             const users = await response.json();
@@ -79,14 +81,15 @@
                 if (msg.type === "INCOMING_CHALLENGE") {
                     const accept = confirm(msg.from + " veut vous défier ! Acceptez-vous le duel ?");
                     if (accept) {
-                        socket.send(JSON.stringify({ type: "ACCEPT_CHALLENGE", to: msg.from, from: myUsername }));
+                        socket.send(JSON.stringify({ type: "ACCEPT_CHALLENGE", to: msg.from, from: window.myUsername }));
                         alert("Défi accepté ! C'est l'heure du duel !");
                         document.getElementById("lobby").style.display = "none";
                         document.getElementById("container").style.display = "flex";
                         if (typeof render === "function") render();
+                        createSurrenderButton();
 
                     } else {
-                        socket.send(JSON.stringify({ type: "DECLINE_CHALLENGE", to: msg.from, from: myUsername }));
+                        socket.send(JSON.stringify({ type: "DECLINE_CHALLENGE", to: msg.from, from: window.myUsername }));
                     }
 
                 } else if (msg.type === "CHALLENGE_ACCEPTED") {
@@ -94,6 +97,7 @@
                     document.getElementById("lobby").style.display = "none";
                     document.getElementById("container").style.display = "flex";
                     if (typeof render === "function") render();
+                    createSurrenderButton();
 
                 } else if (msg.type === "CHALLENGE_DECLINED") {
                     alert(msg.from + " est une poule mouillée.");
@@ -107,6 +111,9 @@
                     makeMove(msg.startRow, msg.startCol, msg.endRow, msg.endCol);
                     if (typeof render === "function") render();
 
+                } else if (msg.type === "OPPONENT_QUIT") {
+                    alert("Votre adversaire a fui le combat lâchement... Victoire par forfait ! (+1)");
+                    window.location.reload();
                 }
             };
 
@@ -115,14 +122,14 @@
                 li.style.marginBottom = "10px";
                 li.textContent = user.username + " (Victoires: " + user.wins + ")";
                 
-                if (user.username !== myUsername) {
+                if (user.username !== window.myUsername) {
                     const duelButton = document.createElement("button");
                     duelButton.textContent = "Défier";
                     duelButton.style.marginLeft = "15px";
                     duelButton.style.padding = "5px 10px";
                     duelButton.style.width = "auto";
                     duelButton.onclick = () => {
-                        socket.send(JSON.stringify({ type: "CHALLENGE", to: user.username, from: myUsername }));
+                        socket.send(JSON.stringify({ type: "CHALLENGE", to: user.username, from: window.myUsername }));
                         alert("Défi envoyé à " + user.username + "... en attente de réponse !");
                     };
                     li.appendChild(duelButton);
@@ -133,6 +140,25 @@
             });
         }
         
+        function createSurrenderButton() {
+            const container = document.getElementById("container");
+            const btn = document.createElement("button");
+            btn.textContent = "Abandonner";
+            btn.style.cssText = "display:block; margin: 15px auto; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Outfit', sans-serif;";
+            btn.onclick = () => {
+                if (confirm("Sérieux ? Abandonner ?")) {
+                    window.gameSocket.send(JSON.stringify({ 
+                        type: "GAME_OVER", 
+                        winnerUsername: window.opponentUsername, 
+                        loserUsername: window.myUsername 
+                    }));
+                    alert("Vous avez abandonné la partie.");
+                    window.location.reload();
+                }
+            };
+            container.appendChild(btn);
+        }
+
         async function authenticate(endpoint, user, pass, displayId) {
             const display = document.getElementById(displayId);
             display.textContent = "Traitement...";

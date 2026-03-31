@@ -100,6 +100,8 @@ wss.on("connection", (ws) => {
         
         if (data.type === "IDENTIFY") {
             onlinePlayers.set(data.username, ws);
+            ws.myUsername = data.username;
+
             //debug
             //console.log("Joueur connecté : ", data.username);
 
@@ -154,9 +156,42 @@ wss.on("connection", (ws) => {
                     
                     await winner.save();
                     await loser.save();
+                    
+                    ws.opponentUsername = null;
+                    const opponentWs = onlinePlayers.get(data.loserUsername) || onlinePlayers.get(data.winnerUsername);
+                    if (opponentWs) opponentWs.opponentUsername = null;
                 }
             } catch (err) {
                 console.error("Erreur mise à jour score:", err);
+            }
+        }
+    });
+
+    ws.on("close", async () => {
+        if (ws.myUsername) {
+            onlinePlayers.delete(ws.myUsername);
+            
+            if (ws.opponentUsername) {
+                const opponentWs = onlinePlayers.get(ws.opponentUsername);
+                if (opponentWs) {
+                    opponentWs.send(JSON.stringify({ type: "OPPONENT_QUIT" }));
+                    opponentWs.opponentUsername = null;
+                }
+                
+                try {
+                    const loser = await User.findOne({ username: ws.myUsername });
+                    const winner = await User.findOne({ username: ws.opponentUsername });
+                    if (winner && loser) {
+                        winner.wins += 1;
+                        loser.losses += 1;
+                        winner.ratio = winner.wins / (winner.wins + loser.losses);
+                        loser.ratio = loser.losses / (winner.wins + loser.losses);
+                        await winner.save();
+                        await loser.save();
+                    }
+                } catch (e) {
+                    console.error("Erreur forfait:", e);
+                }
             }
         }
     });
