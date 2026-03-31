@@ -46,8 +46,31 @@ function render() {
 }
 
 function handleCellClick(row, col) {
+    if (window.myPlayerId && window.myPlayerId !== currentPlayer) {
+        return;
+    }
+
+    const oldPlayer = currentPlayer;
+    const oldRafle = currentRaflePiece ? { ...currentRaflePiece } : null;
+
     if (currentRaflePiece) {
-        makeMove(currentRaflePiece.row, currentRaflePiece.col, row, col);
+        const startRow = currentRaflePiece.row;
+        const startCol = currentRaflePiece.col;
+
+        makeMove(startRow, startCol, row, col);
+
+        if (currentPlayer !== oldPlayer || currentRaflePiece !== oldRafle) {
+            if (window.gameSocket && window.opponentUsername) {
+                window.gameSocket.send(JSON.stringify({
+                    type: "MOVE",
+                    startRow, startCol,
+                    endRow: row,
+                    endCol: col,
+                    to: window.opponentUsername
+                }));
+            }
+        }
+
         selectedPiece = currentRaflePiece ? { row: currentRaflePiece.row, col: currentRaflePiece.col } : null;
         render();
         return;
@@ -62,7 +85,24 @@ function handleCellClick(row, col) {
         if (row === selectedPiece.row && col === selectedPiece.col) {
             selectedPiece = null;
         } else {
-            makeMove(selectedPiece.row, selectedPiece.col, row, col);
+            const startRow = selectedPiece.row;
+            const startCol = selectedPiece.col;
+
+            makeMove(startRow, startCol, row, col);
+            
+            if (currentPlayer !== oldPlayer || currentRaflePiece !== oldRafle) {
+                if (window.gameSocket && window.opponentUsername) {
+                    window.gameSocket.send(JSON.stringify({
+                        type: "MOVE",
+                        startRow,
+                        startCol,
+                        endRow: row,
+                        endCol: col,
+                        to: window.opponentUsername
+                    }));
+                }
+            }
+
             selectedPiece = currentRaflePiece ? { row: currentRaflePiece.row, col: currentRaflePiece.col } : null;
         }
         render();

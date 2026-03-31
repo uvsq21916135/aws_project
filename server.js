@@ -104,18 +104,39 @@ wss.on("connection", (ws) => {
 
         } else if (data.type === "CHALLENGE") {
             const targetWs = onlinePlayers.get(data.to);
+
             if (targetWs) {
-                targetWs.send(JSON.stringify({ type: "INCOMING_CHALLENGE", from: data.from }));
+                targetWs.send(JSON.stringify({ type: "INCOMING_CHALLENGE",from: data.from }));
             }
+
         } else if (data.type === "ACCEPT_CHALLENGE") {
             const opponentWs = onlinePlayers.get(data.to);
+
             if (opponentWs) {
                 opponentWs.send(JSON.stringify({ type: "CHALLENGE_ACCEPTED", from: data.from }));
+
+                ws.send(JSON.stringify({ type: "GAME_START", role: 2, opponent: data.to }));
+                opponentWs.send(JSON.stringify({ type: "GAME_START", role: 1, opponent: data.from }));
             }
+
         } else if (data.type === "DECLINE_CHALLENGE") {
             const opponentWs = onlinePlayers.get(data.to);
+
             if (opponentWs) {
                 opponentWs.send(JSON.stringify({ type: "CHALLENGE_DECLINED", from: data.from }));
+            }
+
+        } else if (data.type === "MOVE") {
+            const opponentWs = onlinePlayers.get(data.to);
+
+            if (opponentWs) {
+                opponentWs.send(JSON.stringify({
+                    type: "OPPONENT_MOVE",
+                    startRow: data.startRow,
+                    startCol: data.startCol,
+                    endRow: data.endRow,
+                    endCol: data.endCol
+                }));
             }
         }
     });

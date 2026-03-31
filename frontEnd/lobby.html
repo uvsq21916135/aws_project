@@ -67,6 +67,7 @@
             userList.innerHTML = "";
 
             const socket = new WebSocket("wss://" + window.location.host);
+            window.gameSocket = socket;
 
             socket.onopen = () => {
                 socket.send(JSON.stringify({ type: "IDENTIFY", username: myUsername }));
@@ -83,16 +84,29 @@
                         document.getElementById("lobby").style.display = "none";
                         document.getElementById("container").style.display = "flex";
                         if (typeof render === "function") render();
+
                     } else {
                         socket.send(JSON.stringify({ type: "DECLINE_CHALLENGE", to: msg.from, from: myUsername }));
                     }
+
                 } else if (msg.type === "CHALLENGE_ACCEPTED") {
                     alert(msg.from + " a accepté votre défi ! C'est l'heure du duel !");
                     document.getElementById("lobby").style.display = "none";
                     document.getElementById("container").style.display = "flex";
                     if (typeof render === "function") render();
+
                 } else if (msg.type === "CHALLENGE_DECLINED") {
-                    alert(msg.from + " est une poule mouillé.");
+                    alert(msg.from + " est une poule mouillée.");
+
+                } else if (msg.type === "GAME_START") {
+                    window.myPlayerId = msg.role;
+                    window.opponentUsername = msg.opponent;
+                    alert("Vous jouez les " + (msg.role === 1 ? "Blancs" : "Noirs") + " !");
+
+                } else if (msg.type === "OPPONENT_MOVE") {
+                    makeMove(msg.startRow, msg.startCol, msg.endRow, msg.endCol);
+                    if (typeof render === "function") render();
+
                 }
             };
 
@@ -112,8 +126,10 @@
                         alert("Défi envoyé à " + user.username + "... en attente de réponse !");
                     };
                     li.appendChild(duelButton);
+
                 }
                 userList.appendChild(li);
+
             });
         }
         
