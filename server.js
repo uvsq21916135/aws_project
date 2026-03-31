@@ -18,6 +18,23 @@ const certificate = fs.readFileSync("cert.pem");
 const credentials = { key: privateKey, cert: certificate };
 const uri = "mongodb+srv://tibo:rigwi0-dArzoq-nigbyr@aws.gpzde5z.mongodb.net/?appName=AWS";
 
+async function updatePlayerStats(winnerUsername, loserUsername) {
+    try {
+        const winner = await User.findOne({ username: winnerUsername });
+        const loser = await User.findOne({ username: loserUsername });
+        if (winner && loser) {
+            winner.wins += 1;
+            loser.losses += 1;
+            winner.ratio = winner.wins / (winner.wins + winner.losses);
+            loser.ratio = loser.wins / (loser.wins + loser.losses);
+            await winner.save();
+            await loser.save();
+        }
+    } catch (e) {
+        console.error("Erreur stats:", e);
+    }
+}
+
 mongoose.connect(uri)
     .then(() => {
         console.log("Connected to MongoDB");
@@ -143,27 +160,11 @@ wss.on("connection", (ws) => {
             }
             
         } else if (data.type === "GAME_OVER") {
-            try {
-                const winner = await User.findOne({ username: data.winnerUsername });
-                const loser = await User.findOne({ username: data.loserUsername });
-                
-                if (winner && loser) {
-                    winner.wins += 1;
-                    loser.losses += 1;
-                    
-                    winner.ratio = winner.wins / (winner.wins + loser.losses);
-                    loser.ratio = loser.losses / (winner.wins + loser.losses);
-                    
-                    await winner.save();
-                    await loser.save();
-                    
-                    ws.opponentUsername = null;
-                    const opponentWs = onlinePlayers.get(data.loserUsername) || onlinePlayers.get(data.winnerUsername);
-                    if (opponentWs) opponentWs.opponentUsername = null;
-                }
-            } catch (err) {
-                console.error("Erreur mise à jour score:", err);
-            }
+            await updatePlayerStats(data.winnerUsername, data.loserUsername);
+            
+            ws.opponentUsername = null;
+            const opponentWs = onlinePlayers.get(data.loserUsername) || onlinePlayers.get(data.winnerUsername);
+            if (opponentWs) opponentWs.opponentUsername = null;
         }
     });
 
@@ -178,20 +179,7 @@ wss.on("connection", (ws) => {
                     opponentWs.opponentUsername = null;
                 }
                 
-                try {
-                    const loser = await User.findOne({ username: ws.myUsername });
-                    const winner = await User.findOne({ username: ws.opponentUsername });
-                    if (winner && loser) {
-                        winner.wins += 1;
-                        loser.losses += 1;
-                        winner.ratio = winner.wins / (winner.wins + loser.losses);
-                        loser.ratio = loser.losses / (winner.wins + loser.losses);
-                        await winner.save();
-                        await loser.save();
-                    }
-                } catch (e) {
-                    console.error("Erreur forfait:", e);
-                }
+                await updatePlayerStats(ws.opponentUsername, ws.myUsername);
             }
         }
     });

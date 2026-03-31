@@ -52,60 +52,43 @@ function handleCellClick(row, col) {
     const oldPlayer = currentPlayer;
     const oldRafle = currentRaflePiece ? { ...currentRaflePiece } : null;
 
+    let moveStartRow, moveStartCol;
+
     if (currentRaflePiece) {
-        const startRow = currentRaflePiece.row;
-        const startCol = currentRaflePiece.col;
+        moveStartRow = currentRaflePiece.row;
+        moveStartCol = currentRaflePiece.col;
+    } else if (selectedPiece && (row !== selectedPiece.row || col !== selectedPiece.col)) {
+        moveStartRow = selectedPiece.row;
+        moveStartCol = selectedPiece.col;
+    } else {
 
-        makeMove(startRow, startCol, row, col);
-
-        if (currentPlayer !== oldPlayer || currentRaflePiece !== oldRafle) {
-            if (window.gameSocket && window.opponentUsername) {
-                window.gameSocket.send(JSON.stringify({
-                    type: "MOVE",
-                    startRow, startCol,
-                    endRow: row,
-                    endCol: col,
-                    to: window.opponentUsername
-                }));
-            }
+        if (!selectedPiece && (board[row][col] === currentPlayer || board[row][col] === currentPlayer + 2)) {
+            selectedPiece = { row, col };
+        } else if (selectedPiece && row === selectedPiece.row && col === selectedPiece.col) {
+            selectedPiece = null;
         }
-
-        selectedPiece = currentRaflePiece ? { row: currentRaflePiece.row, col: currentRaflePiece.col } : null;
         render();
         return;
     }
 
-    if (!selectedPiece) {
-        if (board[row][col] === currentPlayer || board[row][col] === currentPlayer + 2) {
-            selectedPiece = { row, col };
-            render();
-        }
-    } else {
-        if (row === selectedPiece.row && col === selectedPiece.col) {
-            selectedPiece = null;
-        } else {
-            const startRow = selectedPiece.row;
-            const startCol = selectedPiece.col;
 
-            makeMove(startRow, startCol, row, col);
-            
-            if (currentPlayer !== oldPlayer || currentRaflePiece !== oldRafle) {
-                if (window.gameSocket && window.opponentUsername) {
-                    window.gameSocket.send(JSON.stringify({
-                        type: "MOVE",
-                        startRow,
-                        startCol,
-                        endRow: row,
-                        endCol: col,
-                        to: window.opponentUsername
-                    }));
-                }
-            }
+    makeMove(moveStartRow, moveStartCol, row, col);
 
-            selectedPiece = currentRaflePiece ? { row: currentRaflePiece.row, col: currentRaflePiece.col } : null;
+    if (currentPlayer !== oldPlayer || currentRaflePiece !== oldRafle) {
+        if (window.gameSocket && window.opponentUsername) {
+            window.gameSocket.send(JSON.stringify({
+                type: "MOVE",
+                startRow: moveStartRow,
+                startCol: moveStartCol,
+                endRow: row,
+                endCol: col,
+                to: window.opponentUsername
+            }));
         }
-        render();
     }
+
+    selectedPiece = currentRaflePiece ? { row: currentRaflePiece.row, col: currentRaflePiece.col } : null;
+    render();
 }
 
 render();
