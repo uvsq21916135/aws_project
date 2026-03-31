@@ -95,8 +95,9 @@ wss.on("connection", (ws) => {
     //debug
     //console.log("Bienvenue sur DamesPoint.com");
 
-    ws.on("message", (message) => {
+    ws.on("message", async (message) => {
         const data = JSON.parse(message);
+        
         if (data.type === "IDENTIFY") {
             onlinePlayers.set(data.username, ws);
             //debug
@@ -137,6 +138,25 @@ wss.on("connection", (ws) => {
                     endRow: data.endRow,
                     endCol: data.endCol
                 }));
+            }
+            
+        } else if (data.type === "GAME_OVER") {
+            try {
+                const winner = await User.findOne({ username: data.winnerUsername });
+                const loser = await User.findOne({ username: data.loserUsername });
+                
+                if (winner && loser) {
+                    winner.wins += 1;
+                    loser.losses += 1;
+                    
+                    winner.ratio = winner.wins / (winner.wins + loser.losses);
+                    loser.ratio = loser.losses / (winner.wins + loser.losses);
+                    
+                    await winner.save();
+                    await loser.save();
+                }
+            } catch (err) {
+                console.error("Erreur mise à jour score:", err);
             }
         }
     });

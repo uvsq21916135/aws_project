@@ -58,8 +58,24 @@ function makeMove(startRow, startCol, endRow, endCol){
 
             if (!hasPossibleMove(board, currentPlayer)) {
                 const winner = currentPlayer === 1 ? 2 : 1;
+                
                 setTimeout(() => {
                     alert('Fin de la partie ! Le Joueur ' + winner + ' gagne.');
+                    
+                    if (window.gameSocket) {
+                        if (window.myPlayerId === winner) {
+                            
+                            const myRealUsername = document.getElementById("log-username").value || document.getElementById("reg-username").value;
+                            
+                            window.gameSocket.send(JSON.stringify({ 
+                                type: "GAME_OVER", 
+                                winnerUsername: myRealUsername,
+                                loserUsername: window.opponentUsername 
+                            }));
+                        }
+                        
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
                 }, 100);
             }
         }
