@@ -18,8 +18,7 @@ function render() {
             }
 
             if (selectedPiece && selectedPiece.row === row && selectedPiece.col === col) {
-                td.style.border = "3px solid #ffeb3b";
-                td.style.boxSizing = "border-box";
+                td.style.boxShadow = "inset 0 0 0 3px #ffeb3b";
             }
 
             if (board[row][col] === 1 || board[row][col] === 3) {
