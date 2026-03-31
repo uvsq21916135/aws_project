@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dames Online - Authentication</title>
-    
+    <link rel="stylesheet" href="/style.css">
+    <script src="/backEnd/utils.js" defer></script>
+    <script src="/backEnd/gameLogic.js" defer></script>
+    <script src="/backEnd/rules.js" defer></script>
+    <script src="/ui.js" defer></script>
 </head>
 <body>
 
@@ -47,6 +51,8 @@
         <ul id="user-list" style="list-style: none;"></ul>
     </div>
 
+    <div id="container" style="display: none;"></div>
+
     <script>
         async function showLobby() {
             document.querySelector(".auth-wrapper").style.display = "none";
@@ -74,13 +80,17 @@
                     if (accept) {
                         socket.send(JSON.stringify({ type: "ACCEPT_CHALLENGE", to: msg.from, from: myUsername }));
                         alert("Défi accepté ! C'est l'heure du duel !");
-                        // TODO: Redirection sur le plateau !
+                        document.getElementById("lobby").style.display = "none";
+                        document.getElementById("container").style.display = "flex";
+                        if (typeof render === "function") render();
                     } else {
                         socket.send(JSON.stringify({ type: "DECLINE_CHALLENGE", to: msg.from, from: myUsername }));
                     }
                 } else if (msg.type === "CHALLENGE_ACCEPTED") {
                     alert(msg.from + " a accepté votre défi ! C'est l'heure du duel !");
-                    // TODO: Redirection sur le plateau !
+                    document.getElementById("lobby").style.display = "none";
+                    document.getElementById("container").style.display = "flex";
+                    if (typeof render === "function") render();
                 } else if (msg.type === "CHALLENGE_DECLINED") {
                     alert(msg.from + " est une poule mouillé.");
                 }
