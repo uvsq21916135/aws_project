@@ -1,7 +1,6 @@
 # aws_project
 
 todo:
--Quand on bouge une piece y'a un petit rebonds etrange
 
 
 todo mais apres:
