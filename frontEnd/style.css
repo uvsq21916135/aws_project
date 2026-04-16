@@ -3,8 +3,8 @@
     --dark-cell: rgb(104, 63, 42);
 
     --background-color: rgb(100, 100, 100);
-    --piece-color-P1: rgb(0, 0, 0);
-    --piece-color-P2: rgb(255, 255, 255);
+    --piece-color-P1: rgb(255, 255, 255);
+    --piece-color-P2: rgb(0, 0, 0);
 }
 
 body {
