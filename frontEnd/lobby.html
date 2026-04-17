@@ -110,7 +110,11 @@
             socket.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
                 
-                if (msg.type === "INCOMING_CHALLENGE") {
+                if (msg.type === "USER_LIST_UPDATE") {
+                    if (document.getElementById("lobby").style.display !== "none") {
+                        if (typeof refreshUserList === "function") refreshUserList();
+                    }
+                } else if (msg.type === "INCOMING_CHALLENGE") {
                     const accept = confirm(msg.from + " veut vous défier ! Acceptez-vous le duel ?");
                     if (accept) {
                         socket.send(JSON.stringify({ type: "ACCEPT_CHALLENGE", to: msg.from, from: window.myUsername }));

@@ -172,6 +172,14 @@ async function finalizeGame(winnerName, loserName) {
     } catch(e) {}
 }
 
+function broadcastUserList() {
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: "USER_LIST_UPDATE" }));
+        }
+    });
+}
+
 wss.on("connection", (ws) => {
     //debug
     //console.log("Bienvenue sur DamesPoint.com");
@@ -191,6 +199,10 @@ wss.on("connection", (ws) => {
             } catch (err) {
                 console.error("Alerte de Sécurité WebSockets:", err.message);
                 ws.close();
+            }
+
+            if (ws.myUsername) {
+                broadcastUserList();
             }
 
             //debug
@@ -313,6 +325,7 @@ wss.on("connection", (ws) => {
     ws.on("close", async () => {
         if (ws.myUsername) {
             onlinePlayers.delete(ws.myUsername);
+            broadcastUserList();
             
             if (ws.opponentUsername) {
                 const opponentWs = onlinePlayers.get(ws.opponentUsername);
