@@ -13,3 +13,7 @@ function removePiece(board, row, col) {
 function becomeEldenLord(board, row, col, player) {
     board[row][col] = player + 2;
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { removePiece, becomeEldenLord };
+}

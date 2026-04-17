@@ -35,7 +35,7 @@ function isFreeCell(board, row, col){
 }
 
 function isInBoard(row, col){
-    return (row >= 0 && row < ROWS) && (col >= 0 && col < COLS);
+    return (row >= 0 && row < 10) && (col >= 0 && col < 10);
 }
 
 function isPlayerPiece(board, row, col, player){
@@ -114,14 +114,14 @@ function isAEatMove(board, startRow, startCol, endRow, endCol, player) {
 }
 
 function hasPossibleJump(board, player, specificRow = null, specificCol = null) {
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 10; c++) {
             if (specificRow !== null && (r !== specificRow || c !== specificCol)) continue;
 
             if (isPlayerPiece(board, r, c, player)) {
                 const directions = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
                 const isDame = board[r][c] === player + 2;
-                const maxDist = isDame ? Math.max(ROWS, COLS) : 2;
+                const maxDist = isDame ? 10 : 2;
 
                 for (let [dr, dc] of directions) {
                     const distStart = isDame ? 2 : 2;
@@ -151,8 +151,8 @@ function arrivingAtLastRow(endRow, player){
 function hasPossibleMove(board, player) {
     if (hasPossibleJump(board, player)) return true;
 
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 10; c++) {
             if (isPlayerPiece(board, r, c, player)) {
                 const isDame = board[r][c] === player + 2;
                 const maxDist = isDame ? 9 : 1;
@@ -174,4 +174,8 @@ function hasPossibleMove(board, player) {
         }
     }
     return false;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { isValidMove, isAEatMove, hasPossibleJump, hasPossibleMove, arrivingAtLastRow };
 }

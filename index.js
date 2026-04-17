@@ -11,6 +11,8 @@ const PORT = 3000;
 const https = require("https");
 const User = require("./backEnd/models/user");
 const jwt = require("jsonwebtoken");
+const { isValidMove, isAEatMove, hasPossibleJump, hasPossibleMove, arrivingAtLastRow } = require("./backEnd/rules");
+const { removePiece, becomeEldenLord } = require("./backEnd/utils");
 
 app.use(express.json());
 
@@ -94,6 +96,33 @@ DamesPointcom.listen(PORT, () => {
 
 const wss = new WebSocket.Server({ server: DamesPointcom });
 const onlinePlayers = new Map();
+const activeGames = new Map();
+
+function createInitialBoard() {
+    let b = Array(10).fill(0).map(() => Array(10).fill(0));
+    for (let r=0; r<4; r++) for(let c=0; c<10; c++) if((r+c)%2!==0) b[r][c] = 2;
+    for (let r=6; r<10; r++) for(let c=0; c<10; c++) if((r+c)%2!==0) b[r][c] = 1;
+    return b;
+}
+
+async function finalizeGame(winnerName, loserName) {
+    try {
+        const winner = await User.findOne({ username: winnerName });
+        const loser = await User.findOne({ username: loserName });
+        if (winner && loser) {
+            winner.wins += 1;
+            loser.losses += 1;
+            winner.ratio = winner.wins / (winner.wins + loser.losses);
+            loser.ratio = loser.losses / (winner.wins + loser.losses);
+            await winner.save();
+            await loser.save();
+            const w1 = onlinePlayers.get(winnerName);
+            if (w1) w1.opponentUsername = null;
+            const w2 = onlinePlayers.get(loserName);
+            if (w2) w2.opponentUsername = null;
+        }
+    } catch(e) {}
+}
 
 wss.on("connection", (ws) => {
     //debug
@@ -130,6 +159,18 @@ wss.on("connection", (ws) => {
             const opponentWs = onlinePlayers.get(data.to);
 
             if (opponentWs) {
+                ws.opponentUsername = data.to;
+                opponentWs.opponentUsername = data.from;
+                
+                const gameId = [data.from, data.to].sort().join('-');
+                activeGames.set(gameId, {
+                    player1: data.to,
+                    player2: data.from,
+                    board: createInitialBoard(),
+                    currentPlayer: 1,
+                    currentRaflePiece: null
+                });
+
                 opponentWs.send(JSON.stringify({ type: "CHALLENGE_ACCEPTED", from: data.from }));
 
                 ws.send(JSON.stringify({ type: "GAME_START", role: 2, opponent: data.to }));
@@ -138,45 +179,76 @@ wss.on("connection", (ws) => {
 
         } else if (data.type === "DECLINE_CHALLENGE") {
             const opponentWs = onlinePlayers.get(data.to);
-
-            if (opponentWs) {
-                opponentWs.send(JSON.stringify({ type: "CHALLENGE_DECLINED", from: data.from }));
-            }
+            if (opponentWs) opponentWs.send(JSON.stringify({ type: "CHALLENGE_DECLINED", from: data.from }));
 
         } else if (data.type === "MOVE") {
             const opponentWs = onlinePlayers.get(data.to);
+            if (!opponentWs) return;
 
-            if (opponentWs) {
-                opponentWs.send(JSON.stringify({
-                    type: "OPPONENT_MOVE",
-                    startRow: data.startRow,
-                    startCol: data.startCol,
-                    endRow: data.endRow,
-                    endCol: data.endCol
-                }));
+            const gameId = [ws.myUsername, data.to].sort().join('-');
+            const game = activeGames.get(gameId);
+            if (!game) return;
+
+            const playerRole = (game.player1 === ws.myUsername) ? 1 : 2;
+            
+            // ANTI CHEAT 1: Tour du joueur ?
+            if (game.currentPlayer !== playerRole) return;
+
+            // ANTI CHEAT 2: Mouvement impossible selon les règles ?
+            if (!isValidMove(game.board, data.startRow, data.startCol, data.endRow, data.endCol, playerRole, game.currentRaflePiece)) {
+                return;
+            }
+
+            // Exécution du coup validé
+            const piece = game.board[data.startRow][data.startCol];
+            game.board[data.startRow][data.startCol] = 0;
+            game.board[data.endRow][data.endCol] = piece;
+
+            let eatMove = isAEatMove(game.board, data.startRow, data.startCol, data.endRow, data.endCol, playerRole);
+            if (eatMove) {
+                removePiece(game.board, eatMove.row, eatMove.col);
+                game.currentRaflePiece = { row: data.endRow, col: data.endCol };
+                if (!hasPossibleJump(game.board, playerRole, data.endRow, data.endCol)) {
+                    game.currentRaflePiece = null;
+                }
+            } else {
+                game.currentRaflePiece = null;
+            }
+
+            if (arrivingAtLastRow(data.endRow, playerRole)) {
+                becomeEldenLord(game.board, data.endRow, data.endCol, playerRole);
+                game.currentRaflePiece = null;
+            }
+
+            if (!game.currentRaflePiece) {
+                game.currentPlayer = (game.currentPlayer === 1) ? 2 : 1;
+            }
+
+            opponentWs.send(JSON.stringify({
+                type: "OPPONENT_MOVE",
+                startRow: data.startRow,
+                startCol: data.startCol,
+                endRow: data.endRow,
+                endCol: data.endCol
+            }));
+
+            // Auto-check Fin de Partie
+            if (!hasPossibleMove(game.board, game.currentPlayer)) {
+                const winnerRole = (game.currentPlayer === 1) ? 2 : 1;
+                const winnerName = (winnerRole === 1) ? game.player1 : game.player2;
+                const loserName = (winnerRole === 1) ? game.player2 : game.player1;
+                await finalizeGame(winnerName, loserName);
+                activeGames.delete(gameId);
             }
             
         } else if (data.type === "GAME_OVER") {
-            try {
-                const winner = await User.findOne({ username: data.winnerUsername });
-                const loser = await User.findOne({ username: data.loserUsername });
-                
-                if (winner && loser) {
-                    winner.wins += 1;
-                    loser.losses += 1;
-                    
-                    winner.ratio = winner.wins / (winner.wins + loser.losses);
-                    loser.ratio = loser.losses / (winner.wins + loser.losses);
-                    
-                    await winner.save();
-                    await loser.save();
-                    
-                    ws.opponentUsername = null;
-                    const opponentWs = onlinePlayers.get(data.loserUsername) || onlinePlayers.get(data.winnerUsername);
-                    if (opponentWs) opponentWs.opponentUsername = null;
-                }
-            } catch (err) {
-                console.error("Erreur mise à jour score:", err);
+            // ANTI CHEAT 3: Usurpation de victoire
+            if (data.loserUsername !== ws.myUsername) return; // Le joueur qui abandonne doit être le joueur actuel
+            
+            const gameId = [data.winnerUsername, data.loserUsername].sort().join('-');
+            if (activeGames.has(gameId)) {
+                await finalizeGame(data.winnerUsername, data.loserUsername);
+                activeGames.delete(gameId);
             }
         }
     });
@@ -192,19 +264,10 @@ wss.on("connection", (ws) => {
                     opponentWs.opponentUsername = null;
                 }
                 
-                try {
-                    const loser = await User.findOne({ username: ws.myUsername });
-                    const winner = await User.findOne({ username: ws.opponentUsername });
-                    if (winner && loser) {
-                        winner.wins += 1;
-                        loser.losses += 1;
-                        winner.ratio = winner.wins / (winner.wins + loser.losses);
-                        loser.ratio = loser.losses / (winner.wins + loser.losses);
-                        await winner.save();
-                        await loser.save();
-                    }
-                } catch (e) {
-                    console.error("Erreur forfait:", e);
+                const gameId = [ws.myUsername, ws.opponentUsername].sort().join('-');
+                if (activeGames.has(gameId)) {
+                    await finalizeGame(ws.opponentUsername, ws.myUsername);
+                    activeGames.delete(gameId);
                 }
             }
         }
