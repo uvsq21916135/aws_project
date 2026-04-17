@@ -17,11 +17,12 @@ const { isValidMove, isAEatMove, hasPossibleJump, hasPossibleMove, arrivingAtLas
 const { removePiece, becomeEldenLord } = require("./backEnd/utils");
 
 const authLimiter = rateLimit({
-    windowMs: 5 * 60 * 1000, // 5 minutes
+    windowMs: 30 * 1000, // 30 secondes
     max: 20, // 20 tentatives max
-    message: { error: "Trop de tentatives. Veuillez réessayer plus tard." }
+    message: { error: "Trop de tentatives. Veuillez réessayer dans 30 secondes." }
 });
 
+app.set('trust proxy', 1); // Indispensable derrière un LoadBalancer (AWS, Heroku, Nginx)
 app.use(express.json());
 
 let credentials;
