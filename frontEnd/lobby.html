@@ -57,18 +57,42 @@
     <script>
         window.myUsername = null;
 
-        async function showLobby() {
-            document.querySelector(".auth-wrapper").style.display = "none";
-            document.getElementById("lobby").style.display = "flex";
-
-            window.myUsername = document.getElementById("log-username").value || document.getElementById("reg-username").value;
-
+        async function refreshUserList() {
             const response = await fetch("/users");
             const users = await response.json();
             window.allUsersInfo = users;
             
             const userList = document.getElementById("user-list");
             userList.innerHTML = "";
+            
+            users.forEach(user => {
+                const li = document.createElement("li");
+                li.style.marginBottom = "10px";
+                li.textContent = user.username + " (Victoires: " + user.wins + ")";
+                
+                if (user.username !== window.myUsername) {
+                    const duelButton = document.createElement("button");
+                    duelButton.textContent = "Défier";
+                    duelButton.style.marginLeft = "15px";
+                    duelButton.style.padding = "5px 10px";
+                    duelButton.style.width = "auto";
+                    duelButton.onclick = () => {
+                        window.gameSocket.send(JSON.stringify({ type: "CHALLENGE", to: user.username, from: window.myUsername }));
+                        alert("Défi envoyé à " + user.username + "... en attente de réponse !");
+                    };
+                    li.appendChild(duelButton);
+                }
+                userList.appendChild(li);
+            });
+        }
+
+        async function showLobby() {
+            document.querySelector(".auth-wrapper").style.display = "none";
+            document.getElementById("lobby").style.display = "flex";
+
+            window.myUsername = document.getElementById("log-username").value || document.getElementById("reg-username").value;
+
+            await refreshUserList();
 
             const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
             const socket = new WebSocket(protocol + window.location.host);
@@ -128,6 +152,14 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div style="flex: 1; display: flex; justify-content: center;">
+                                <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <span id="turn-diode" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #64748b; transition: all 0.3s ease;"></span>
+                                    <span id="turn-text" style="font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.3s ease;">...</span>
+                                </div>
+                            </div>
+
                             <div style="text-align: right; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px;">
                                 <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Victoires</div>
                                 <div style="font-weight: 800; color: #facc15; font-size: 1.1rem;">🏆 ${wins}</div>
@@ -146,28 +178,6 @@
                     returnToLobby();
                 }
             };
-
-            users.forEach(user => {
-                const li = document.createElement("li");
-                li.style.marginBottom = "10px";
-                li.textContent = user.username + " (Victoires: " + user.wins + ")";
-                
-                if (user.username !== window.myUsername) {
-                    const duelButton = document.createElement("button");
-                    duelButton.textContent = "Défier";
-                    duelButton.style.marginLeft = "15px";
-                    duelButton.style.padding = "5px 10px";
-                    duelButton.style.width = "auto";
-                    duelButton.onclick = () => {
-                        socket.send(JSON.stringify({ type: "CHALLENGE", to: user.username, from: window.myUsername }));
-                        alert("Défi envoyé à " + user.username + "... en attente de réponse !");
-                    };
-                    li.appendChild(duelButton);
-
-                }
-                userList.appendChild(li);
-
-            });
         }
         
         function createSurrenderButton() {
@@ -203,6 +213,31 @@
             
             const btn = document.getElementById("surrender-btn");
             if (btn) btn.remove();
+            
+            setTimeout(() => {
+                if (typeof refreshUserList === "function") refreshUserList();
+            }, 800);
+        }
+
+        function updateTurnIndicator() {
+            const diode = document.getElementById('turn-diode');
+            const text = document.getElementById('turn-text');
+            if (!diode || !text) return;
+            
+            // currentPlayer est définie globalement dans gameLogic.js
+            if (window.myPlayerId === currentPlayer) {
+                // Diode Verte/Bleutée pour mon tour
+                diode.style.background = '#10b981';
+                diode.style.boxShadow = '0 0 10px #10b981, 0 0 20px #10b981';
+                text.style.color = '#34d399';
+                text.textContent = 'À TOI DE JOUER';
+            } else {
+                // Diode Rouge pour l'adversaire
+                diode.style.background = '#ef4444';
+                diode.style.boxShadow = '0 0 10px #ef4444';
+                text.style.color = '#f87171';
+                text.textContent = 'TOUR ADVERSE';
+            }
         }
 
         async function authenticate(endpoint, user, pass, displayId) {

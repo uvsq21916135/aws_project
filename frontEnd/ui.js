@@ -43,6 +43,10 @@ function render() {
         table.appendChild(tr);
     }
     container.appendChild(table);
+    
+    if (typeof updateTurnIndicator === "function") {
+        updateTurnIndicator();
+    }
 }
 
 function handleCellClick(row, col) {
