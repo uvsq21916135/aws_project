@@ -17,6 +17,7 @@ https://dames-en-ligne.onrender.com/
 ## Stack Technique
 - **Frontend** : HTML5, CSS3, JavaScript (Vanilla ES6+)
 - **Backend API & WebSockets** : Node.js, Express.js, module `ws`
+- **Hébergement** : Render.com
 - **Base de Données** : MongoDB (Atlas cloud) & ODM Mongoose
 - **Sécurité et Hachage** : `jsonwebtoken`, `argon2`, `express-rate-limit`, SSL embarqué natif.
 
