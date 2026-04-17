@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
 :root {
-    /* Blue-Grey palette (Slate/Blue) */
-    --bg-main: #1e293b;
-    --bg-secondary: #0f172a;
-    --bg-panel: #0b1121;
+    /* Chess.com Dark Theme */
+    --bg-main: #312e2b;
+    --bg-secondary: #262421;
+    --bg-panel: #21201d;
     
     /* Board colors */
-    --board-light: #e2e8f0;
-    --board-dark: #334155;
-    --board-border: #0f172a;
+    --board-light: #ebecd0;
+    --board-dark: #739552;
+    --board-border: #262421;
     
     /* Global Elements */
-    --accent-color: #3b82f6;
-    --accent-hover: #60a5fa;
-    --accent-shadow: #1d4ed8;
+    --accent-color: #81b64c;
+    --accent-hover: #95c860;
+    --accent-shadow: #537133;
     
     --text-primary: #ffffffe6;
-    --text-muted: #94a3b8;
-    --input-bg: #1e293b;
+    --text-muted: #989795;
+    --input-bg: #3c3a38;
 }
 
 * {
@@ -94,8 +94,8 @@ input {
 
 input:focus {
     outline: none;
-    border-color: #475569;
-    background: #334155;
+    border-color: #5c5a58;
+    background: #474543;
 }
 
 button {
@@ -154,7 +154,7 @@ ul#user-list li {
 }
 
 ul#user-list li:hover {
-    background: #1e293b;
+    background: #2a2826;
 }
 
 ul#user-list li button {

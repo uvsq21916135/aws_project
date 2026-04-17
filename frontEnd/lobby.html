@@ -141,29 +141,29 @@
                     const header = document.getElementById("game-header");
                     header.style.display = "flex";
                     header.innerHTML = `
-                        <div style="display: flex; align-items: center; background: var(--bg-panel); padding: 10px 20px; border-radius: 4px; color: white; width: 100%; max-width: 530px; justify-content: space-between; border: 1px solid #1e293b; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+                        <div style="display: flex; align-items: center; background: var(--bg-panel); padding: 10px 20px; border-radius: 4px; color: white; width: 100%; max-width: 530px; justify-content: space-between; border: 1px solid #3c3a38; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div style="width: 45px; height: 45px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
+                                <div style="width: 45px; height: 45px; background: #474543; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
                                     ${msg.opponent.charAt(0).toUpperCase()}
                                 </div>
                                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
                                     <span style="font-weight: 700; font-size: 1.2rem; letter-spacing: 0.5px;">${msg.opponent}</span>
                                     <div style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
-                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px #10b981;"></span>
-                                        <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">En jeu</span>
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #81b64c; box-shadow: 0 0 5px #81b64c;"></span>
+                                        <span style="font-size: 0.85rem; color: #989795; font-weight: 600;">En jeu</span>
                                     </div>
                                 </div>
                             </div>
                             
                             <div style="flex: 1; display: flex; justify-content: center;">
-                                <div style="display: flex; align-items: center; gap: 8px; background: #0f172a; padding: 6px 16px; border-radius: 4px; border: 1px solid #1e293b;">
-                                    <span id="turn-diode" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #64748b; transition: all 0.3s ease;"></span>
+                                <div style="display: flex; align-items: center; gap: 8px; background: #1a1917; padding: 6px 16px; border-radius: 4px; border: 1px solid #3c3a38;">
+                                    <span id="turn-diode" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #989795; transition: all 0.3s ease;"></span>
                                     <span id="turn-text" style="font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.3s ease;">...</span>
                                 </div>
                             </div>
 
-                            <div style="text-align: right; background: #0f172a; padding: 8px 15px; border-radius: 4px;">
-                                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Victoires</div>
+                            <div style="text-align: right; background: #1a1917; padding: 8px 15px; border-radius: 4px;">
+                                <div style="font-size: 0.75rem; color: #989795; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Victoires</div>
                                 <div style="font-weight: 800; color: #facc15; font-size: 1.1rem;">🏆 ${wins}</div>
                             </div>
                         </div>
@@ -232,14 +232,14 @@
             
             // currentPlayer est définie globalement dans gameLogic.js
             if (window.myPlayerId === currentPlayer) {
-                diode.style.background = '#3b82f6';
-                diode.style.boxShadow = '0 0 8px #3b82f6';
-                text.style.color = '#60a5fa';
+                diode.style.background = '#81b64c';
+                diode.style.boxShadow = '0 0 8px #81b64c';
+                text.style.color = '#95c860';
                 text.textContent = 'À TOI DE JOUER';
             } else {
-                diode.style.background = '#64748b';
+                diode.style.background = '#989795';
                 diode.style.boxShadow = 'none';
-                text.style.color = '#64748b';
+                text.style.color = '#989795';
                 text.textContent = 'TOUR ADVERSE';
             }
         }
