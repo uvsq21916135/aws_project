@@ -18,8 +18,7 @@ function render() {
             }
 
             if (selectedPiece && selectedPiece.row === row && selectedPiece.col === col) {
-                td.style.boxShadow = "inset 0 0 15px rgba(255, 215, 0, 0.8)";
-                td.style.filter = "brightness(1.5)";
+                td.style.backgroundColor = "rgba(244, 246, 128, 0.6)";
             }
 
             if (board[row][col] === 1 || board[row][col] === 3) {
