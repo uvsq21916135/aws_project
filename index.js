@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 
@@ -16,7 +17,7 @@ const privateKey = fs.readFileSync("key.pem");
 const certificate = fs.readFileSync("cert.pem");
 
 const credentials = { key: privateKey, cert: certificate };
-const uri = "mongodb+srv://tibo:rigwi0-dArzoq-nigbyr@aws.gpzde5z.mongodb.net/?appName=AWS";
+const uri = process.env.MONGO_URI;
 
 async function updatePlayerStats(winnerUsername, loserUsername) {
     try {
