@@ -47,7 +47,10 @@
     </div>
 
     <div id="lobby" class="auth-wrapper" style="display: none;">
-        <h2>Liste des joueurs</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <h2>Liste des joueurs</h2>
+            <button id="logout-btn" onclick="logout()" style="width: auto; padding: 8px 16px; font-size: 0.85rem; background: #dc3545; box-shadow: 0 4px 0 #a71d2a;">DÉCONNEXION</button>
+        </div>
         <ul id="user-list" style="list-style: none;"></ul>
     </div>
 
@@ -225,12 +228,24 @@
             }, 800);
         }
 
+        function logout() {
+            if (window.gameSocket) {
+                window.gameSocket.close();
+                window.gameSocket = null;
+            }
+            sessionStorage.removeItem("userToken");
+            window.myUsername = null;
+            document.getElementById("lobby").style.display = "none";
+            document.querySelector(".auth-wrapper").style.display = "flex";
+            document.getElementById("log-username").value = "";
+            document.getElementById("log-password").value = "";
+        }
+
         function updateTurnIndicator() {
             const diode = document.getElementById('turn-diode');
             const text = document.getElementById('turn-text');
             if (!diode || !text) return;
             
-            // currentPlayer est définie globalement dans gameLogic.js
             if (window.myPlayerId === currentPlayer) {
                 diode.style.background = '#81b64c';
                 diode.style.boxShadow = '0 0 8px #81b64c';
