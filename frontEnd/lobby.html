@@ -114,7 +114,7 @@
 
                 } else if (msg.type === "OPPONENT_QUIT") {
                     alert("Votre adversaire a fui le combat lâchement... Victoire par forfait ! (+1)");
-                    window.location.reload();
+                    returnToLobby();
                 }
             };
 
@@ -144,6 +144,7 @@
         function createSurrenderButton() {
             const container = document.getElementById("container");
             const btn = document.createElement("button");
+            btn.id = "surrender-btn";
             btn.textContent = "Abandonner";
             btn.style.cssText = "display:block; margin: 15px auto; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Outfit', sans-serif;";
             btn.onclick = () => {
@@ -154,10 +155,24 @@
                         loserUsername: window.myUsername 
                     }));
                     alert("Vous avez abandonné la partie.");
-                    window.location.reload();
+                    returnToLobby();
                 }
             };
             container.appendChild(btn);
+        }
+
+        function returnToLobby() {
+            document.getElementById("container").style.display = "none";
+            document.getElementById("lobby").style.display = "flex";
+            
+            window.opponentUsername = null;
+            window.myPlayerId = null;
+
+            if (typeof resetGame === "function") resetGame();
+            if (typeof render === "function") render();
+            
+            const btn = document.getElementById("surrender-btn");
+            if (btn) btn.remove();
         }
 
         async function authenticate(endpoint, user, pass, displayId) {

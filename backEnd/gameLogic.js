@@ -73,12 +73,25 @@ function makeMove(startRow, startCol, endRow, endCol){
                                 loserUsername: window.opponentUsername 
                             }));
                         }
-                        
-                        setTimeout(() => window.location.reload(), 1500);
+                        setTimeout(() => { if (typeof returnToLobby === "function") returnToLobby(); else window.location.reload(); }, 1500);
                     }
                 }, 100);
             }
         }
+    }
+}
+
+function resetGame() {
+    for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+            board[row][col] = 0;
+        }
+    }
+    initBoard();
+    currentPlayer = 1;
+    currentRaflePiece = null;
+    if (typeof selectedPiece !== 'undefined') {
+        selectedPiece = null;
     }
 }
 
