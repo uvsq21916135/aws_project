@@ -140,9 +140,9 @@
                     const header = document.getElementById("game-header");
                     header.style.display = "flex";
                     header.innerHTML = `
-                        <div style="display: flex; align-items: center; background: var(--bg-panel); padding: 10px 20px; border-radius: 4px; color: white; width: 100%; max-width: 530px; justify-content: space-between; border: 1px solid #3c3a38; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+                        <div style="display: flex; align-items: center; background: var(--bg-panel); padding: 10px 20px; border-radius: 4px; color: white; width: 100%; max-width: 530px; justify-content: space-between; border: 1px solid #1e293b; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div style="width: 45px; height: 45px; background: #474543; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
+                                <div style="width: 45px; height: 45px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
                                     ${msg.opponent.charAt(0).toUpperCase()}
                                 </div>
                                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
@@ -155,14 +155,14 @@
                             </div>
                             
                             <div style="flex: 1; display: flex; justify-content: center;">
-                                <div style="display: flex; align-items: center; gap: 8px; background: #1c1a19; padding: 6px 16px; border-radius: 4px; border: 1px solid #3c3a38;">
+                                <div style="display: flex; align-items: center; gap: 8px; background: #0f172a; padding: 6px 16px; border-radius: 4px; border: 1px solid #1e293b;">
                                     <span id="turn-diode" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #64748b; transition: all 0.3s ease;"></span>
                                     <span id="turn-text" style="font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.3s ease;">...</span>
                                 </div>
                             </div>
 
-                            <div style="text-align: right; background: #1c1a19; padding: 8px 15px; border-radius: 4px;">
-                                <div style="font-size: 0.75rem; color: #8b8987; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Victoires</div>
+                            <div style="text-align: right; background: #0f172a; padding: 8px 15px; border-radius: 4px;">
+                                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Victoires</div>
                                 <div style="font-weight: 800; color: #facc15; font-size: 1.1rem;">🏆 ${wins}</div>
                             </div>
                         </div>
@@ -231,14 +231,14 @@
             
             // currentPlayer est définie globalement dans gameLogic.js
             if (window.myPlayerId === currentPlayer) {
-                diode.style.background = '#81b64c';
-                diode.style.boxShadow = '0 0 8px #81b64c';
-                text.style.color = '#81b64c';
+                diode.style.background = '#3b82f6';
+                diode.style.boxShadow = '0 0 8px #3b82f6';
+                text.style.color = '#60a5fa';
                 text.textContent = 'À TOI DE JOUER';
             } else {
-                diode.style.background = '#8b8987';
+                diode.style.background = '#64748b';
                 diode.style.boxShadow = 'none';
-                text.style.color = '#8b8987';
+                text.style.color = '#64748b';
                 text.textContent = 'TOUR ADVERSE';
             }
         }
