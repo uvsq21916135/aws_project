@@ -170,8 +170,11 @@ wss.on("connection", (ws) => {
             await updatePlayerStats(data.winnerUsername, data.loserUsername);
             
             ws.opponentUsername = null;
-            const opponentWs = onlinePlayers.get(data.loserUsername) || onlinePlayers.get(data.winnerUsername);
-            if (opponentWs) opponentWs.opponentUsername = null;
+            const winnerWs = onlinePlayers.get(data.winnerUsername);
+            if (winnerWs) {
+                winnerWs.send(JSON.stringify({ type: "OPPONENT_QUIT" }));
+                winnerWs.opponentUsername = null;
+            }
         }
     });
 
