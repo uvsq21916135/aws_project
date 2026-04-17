@@ -51,10 +51,41 @@
         <ul id="user-list" style="list-style: none;"></ul>
     </div>
 
+    <div id="game-header" style="display: none; width: 100%; justify-content: center; margin-top: 20px;"></div>
     <div id="container" style="display: none;"></div>
+    <div id="game-footer" style="display: none; width: 100%; justify-content: center; margin-top: 20px;"></div>
 
     <script>
         window.myUsername = null;
+
+        async function refreshUserList() {
+            const response = await fetch("/users");
+            const users = await response.json();
+            window.allUsersInfo = users;
+            
+            const userList = document.getElementById("user-list");
+            userList.innerHTML = "";
+            
+            users.forEach(user => {
+                const li = document.createElement("li");
+                li.style.marginBottom = "10px";
+                li.textContent = user.username + " (Victoires: " + user.wins + ")";
+                
+                if (user.username !== window.myUsername) {
+                    const duelButton = document.createElement("button");
+                    duelButton.textContent = "Défier";
+                    duelButton.style.marginLeft = "15px";
+                    duelButton.style.padding = "5px 10px";
+                    duelButton.style.width = "auto";
+                    duelButton.onclick = () => {
+                        window.gameSocket.send(JSON.stringify({ type: "CHALLENGE", to: user.username, from: window.myUsername }));
+                        alert("Défi envoyé à " + user.username + "... en attente de réponse !");
+                    };
+                    li.appendChild(duelButton);
+                }
+                userList.appendChild(li);
+            });
+        }
 
         async function showLobby() {
             document.querySelector(".auth-wrapper").style.display = "none";
@@ -62,13 +93,10 @@
 
             window.myUsername = document.getElementById("log-username").value || document.getElementById("reg-username").value;
 
-            const response = await fetch("/users");
-            const users = await response.json();
-            
-            const userList = document.getElementById("user-list");
-            userList.innerHTML = "";
+            await refreshUserList();
 
-            const socket = new WebSocket("wss://" + window.location.host);
+            const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const socket = new WebSocket(protocol + window.location.host);
             window.gameSocket = socket;
 
             socket.onopen = () => {
@@ -106,6 +134,41 @@
                 } else if (msg.type === "GAME_START") {
                     window.myPlayerId = msg.role;
                     window.opponentUsername = msg.opponent;
+                    
+                    const oppInfo = window.allUsersInfo ? window.allUsersInfo.find(u => u.username === msg.opponent) : null;
+                    const wins = oppInfo ? oppInfo.wins : '?';
+                    
+                    const header = document.getElementById("game-header");
+                    header.style.display = "flex";
+                    header.innerHTML = `
+                        <div style="display: flex; align-items: center; background: var(--bg-panel); padding: 10px 20px; border-radius: 4px; color: white; width: 100%; max-width: 530px; justify-content: space-between; border: 1px solid #1e293b; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 45px; height: 45px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
+                                    ${msg.opponent.charAt(0).toUpperCase()}
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                                    <span style="font-weight: 700; font-size: 1.2rem; letter-spacing: 0.5px;">${msg.opponent}</span>
+                                    <div style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px #10b981;"></span>
+                                        <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">En jeu</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="flex: 1; display: flex; justify-content: center;">
+                                <div style="display: flex; align-items: center; gap: 8px; background: #0f172a; padding: 6px 16px; border-radius: 4px; border: 1px solid #1e293b;">
+                                    <span id="turn-diode" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #64748b; transition: all 0.3s ease;"></span>
+                                    <span id="turn-text" style="font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.3s ease;">...</span>
+                                </div>
+                            </div>
+
+                            <div style="text-align: right; background: #0f172a; padding: 8px 15px; border-radius: 4px;">
+                                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Victoires</div>
+                                <div style="font-weight: 800; color: #facc15; font-size: 1.1rem;">🏆 ${wins}</div>
+                            </div>
+                        </div>
+                    `;
+
                     alert("Vous jouez les " + (msg.role === 1 ? "Blancs" : "Noirs") + " !");
 
                 } else if (msg.type === "OPPONENT_MOVE") {
@@ -114,38 +177,20 @@
 
                 } else if (msg.type === "OPPONENT_QUIT") {
                     alert("Votre adversaire a fui le combat lâchement... Victoire par forfait ! (+1)");
-                    window.location.reload();
+                    returnToLobby();
                 }
             };
-
-            users.forEach(user => {
-                const li = document.createElement("li");
-                li.style.marginBottom = "10px";
-                li.textContent = user.username + " (Victoires: " + user.wins + ")";
-                
-                if (user.username !== window.myUsername) {
-                    const duelButton = document.createElement("button");
-                    duelButton.textContent = "Défier";
-                    duelButton.style.marginLeft = "15px";
-                    duelButton.style.padding = "5px 10px";
-                    duelButton.style.width = "auto";
-                    duelButton.onclick = () => {
-                        socket.send(JSON.stringify({ type: "CHALLENGE", to: user.username, from: window.myUsername }));
-                        alert("Défi envoyé à " + user.username + "... en attente de réponse !");
-                    };
-                    li.appendChild(duelButton);
-
-                }
-                userList.appendChild(li);
-
-            });
         }
         
         function createSurrenderButton() {
-            const container = document.getElementById("container");
+            const footer = document.getElementById("game-footer");
+            footer.style.display = "flex";
             const btn = document.createElement("button");
-            btn.textContent = "Abandonner";
-            btn.style.cssText = "display:block; margin: 15px auto; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Outfit', sans-serif;";
+            btn.id = "surrender-btn";
+            btn.textContent = "ABANDONNER";
+            btn.style.cssText = "display:block; margin: 15px auto; padding: 14px 24px; background: #dc3545; color: white; border: none; border-radius: 4px; box-shadow: 0 4px 0 #a71d2a; cursor: pointer; text-transform: uppercase; font-weight: 800; transition: all 0.1s;";
+            btn.onmousedown = () => { btn.style.transform = "translateY(4px)"; btn.style.boxShadow = "0 0 0 #a71d2a"; };
+            btn.onmouseup = () => { btn.style.transform = "none"; btn.style.boxShadow = "0 4px 0 #a71d2a"; };
             btn.onclick = () => {
                 if (confirm("Sérieux ? Abandonner ?")) {
                     window.gameSocket.send(JSON.stringify({ 
@@ -154,10 +199,49 @@
                         loserUsername: window.myUsername 
                     }));
                     alert("Vous avez abandonné la partie.");
-                    window.location.reload();
+                    returnToLobby();
                 }
             };
-            container.appendChild(btn);
+            footer.appendChild(btn);
+        }
+
+        function returnToLobby() {
+            document.getElementById("container").style.display = "none";
+            document.getElementById("game-header").style.display = "none";
+            document.getElementById("game-footer").style.display = "none";
+            document.getElementById("lobby").style.display = "flex";
+            
+            window.opponentUsername = null;
+            window.myPlayerId = null;
+
+            if (typeof resetGame === "function") resetGame();
+            if (typeof render === "function") render();
+            
+            const btn = document.getElementById("surrender-btn");
+            if (btn) btn.remove();
+            
+            setTimeout(() => {
+                if (typeof refreshUserList === "function") refreshUserList();
+            }, 800);
+        }
+
+        function updateTurnIndicator() {
+            const diode = document.getElementById('turn-diode');
+            const text = document.getElementById('turn-text');
+            if (!diode || !text) return;
+            
+            // currentPlayer est définie globalement dans gameLogic.js
+            if (window.myPlayerId === currentPlayer) {
+                diode.style.background = '#3b82f6';
+                diode.style.boxShadow = '0 0 8px #3b82f6';
+                text.style.color = '#60a5fa';
+                text.textContent = 'À TOI DE JOUER';
+            } else {
+                diode.style.background = '#64748b';
+                diode.style.boxShadow = 'none';
+                text.style.color = '#64748b';
+                text.textContent = 'TOUR ADVERSE';
+            }
         }
 
         async function authenticate(endpoint, user, pass, displayId) {

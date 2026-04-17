@@ -7,7 +7,8 @@ const fs = require("fs");
 const path = require("path");
 const mongoose = require("mongoose");
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const http = require("http");
 const https = require("https");
 const User = require("./backEnd/models/user");
 const jwt = require("jsonwebtoken");
@@ -23,11 +24,33 @@ const authLimiter = rateLimit({
 
 app.use(express.json());
 
-const privateKey = fs.readFileSync("key.pem");
-const certificate = fs.readFileSync("cert.pem");
+let credentials;
+try {
+    const privateKey = fs.readFileSync("key.pem");
+    const certificate = fs.readFileSync("cert.pem");
+    credentials = { key: privateKey, cert: certificate };
+} catch (e) {
+    console.log("Aucun certificat SSL trouvé (normal si hébergé sur Render). Serveur configuré en HTTP.");
+}
 
-const credentials = { key: privateKey, cert: certificate };
 const uri = process.env.MONGO_URI;
+
+async function updatePlayerStats(winnerUsername, loserUsername) {
+    try {
+        const winner = await User.findOne({ username: winnerUsername });
+        const loser = await User.findOne({ username: loserUsername });
+        if (winner && loser) {
+            winner.wins += 1;
+            loser.losses += 1;
+            winner.ratio = winner.wins / (winner.wins + winner.losses);
+            loser.ratio = loser.wins / (loser.wins + loser.losses);
+            await winner.save();
+            await loser.save();
+        }
+    } catch (e) {
+        console.error("Erreur stats:", e);
+    }
+}
 
 mongoose.connect(uri)
     .then(() => {
@@ -111,10 +134,10 @@ app.get("/users", async (req, res) => {
     }
 });
 
-const DamesPointcom = https.createServer(credentials, app);
+const DamesPointcom = credentials ? https.createServer(credentials, app) : http.createServer(app);
 
 DamesPointcom.listen(PORT, () => {
-    console.log(`https server started on port ${PORT}`);
+    console.log(`Server started on port ${PORT} (${credentials ? "HTTPS" : "HTTP"})`);
 });
 
 const wss = new WebSocket.Server({ server: DamesPointcom });
@@ -273,6 +296,15 @@ wss.on("connection", (ws) => {
                 await finalizeGame(data.winnerUsername, data.loserUsername);
                 activeGames.delete(gameId);
             }
+
+            await updatePlayerStats(data.winnerUsername, data.loserUsername);
+            
+            ws.opponentUsername = null;
+            const winnerWs = onlinePlayers.get(data.winnerUsername);
+            if (winnerWs) {
+                winnerWs.send(JSON.stringify({ type: "OPPONENT_QUIT" }));
+                winnerWs.opponentUsername = null;
+            }
         }
     });
 
@@ -292,6 +324,7 @@ wss.on("connection", (ws) => {
                     await finalizeGame(ws.opponentUsername, ws.myUsername);
                     activeGames.delete(gameId);
                 }
+                await updatePlayerStats(ws.opponentUsername, ws.myUsername);
             }
         }
     });
