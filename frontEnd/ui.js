@@ -18,8 +18,8 @@ function render() {
             }
 
             if (selectedPiece && selectedPiece.row === row && selectedPiece.col === col) {
-                td.style.border = "3px solid #ffeb3b";
-                td.style.boxSizing = "border-box";
+                td.style.boxShadow = "inset 0 0 15px rgba(255, 215, 0, 0.8)";
+                td.style.filter = "brightness(1.5)";
             }
 
             if (board[row][col] === 1 || board[row][col] === 3) {
