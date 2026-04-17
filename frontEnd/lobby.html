@@ -72,7 +72,8 @@
             window.gameSocket = socket;
 
             socket.onopen = () => {
-                socket.send(JSON.stringify({ type: "IDENTIFY", username: myUsername }));
+                const token = sessionStorage.getItem("userToken");
+                socket.send(JSON.stringify({ type: "IDENTIFY", username: myUsername, token: token }));
             };
 
             socket.onmessage = (event) => {
@@ -180,6 +181,7 @@
                     display.textContent = data.message;
                     display.className = "feedback success";
                     if (endpoint === "/login") {
+                        sessionStorage.setItem("userToken", data.token);
                         showLobby();
                     }
                 }

@@ -10,6 +10,7 @@ const mongoose = require("mongoose");
 const PORT = 3000;
 const https = require("https");
 const User = require("./backEnd/models/user");
+const jwt = require("jsonwebtoken");
 
 app.use(express.json());
 
@@ -68,7 +69,9 @@ app.post("/login", async (req, res) => {
             return res.status(400).json({ error: "Utilisateur ou mot de passe incorrect" });
         }
 
-        res.status(200).json({ message: "Connexion réussie", username: user.username });
+        const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET, { expiresIn: "4h" });
+
+        res.status(200).json({ message: "Connexion réussie", username: user.username, token });
     } catch (error) {
         res.status(500).json({ error: "Erreur interne du serveur" });
     }
@@ -100,8 +103,18 @@ wss.on("connection", (ws) => {
         const data = JSON.parse(message);
         
         if (data.type === "IDENTIFY") {
-            onlinePlayers.set(data.username, ws);
-            ws.myUsername = data.username;
+            try {
+                if (!data.token) throw new Error("Jeton manquant");
+                
+                const decoded = jwt.verify(data.token, process.env.JWT_SECRET);
+                if (decoded.username !== data.username) throw new Error("Usurpation de Pseudo bloquée");
+
+                onlinePlayers.set(data.username, ws);
+                ws.myUsername = data.username;
+            } catch (err) {
+                console.error("Alerte de Sécurité WebSockets:", err.message);
+                ws.close();
+            }
 
             //debug
             //console.log("Joueur connecté : ", data.username);
