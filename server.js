@@ -128,7 +128,8 @@ app.post("/login", authLimiter, async (req, res) => {
 
 app.get("/users", async (req, res) => {
     try {
-        const users = await User.find({}).select("username wins losses ratio");
+        const activeUsernames = Array.from(onlinePlayers.keys());
+        const users = await User.find({ username: { $in: activeUsernames } }).select("username wins losses ratio");
         res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ error: "Erreur interne du serveur" });
