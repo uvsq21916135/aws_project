@@ -53,6 +53,7 @@
 
     <div id="game-header" style="display: none; width: 100%; justify-content: center; margin-top: 20px;"></div>
     <div id="container" style="display: none;"></div>
+    <div id="game-footer" style="display: none; width: 100%; justify-content: center; margin-top: 20px;"></div>
 
     <script>
         window.myUsername = null;
@@ -181,7 +182,8 @@
         }
         
         function createSurrenderButton() {
-            const container = document.getElementById("container");
+            const footer = document.getElementById("game-footer");
+            footer.style.display = "flex";
             const btn = document.createElement("button");
             btn.id = "surrender-btn";
             btn.textContent = "Abandonner";
@@ -197,12 +199,13 @@
                     returnToLobby();
                 }
             };
-            container.appendChild(btn);
+            footer.appendChild(btn);
         }
 
         function returnToLobby() {
             document.getElementById("container").style.display = "none";
             document.getElementById("game-header").style.display = "none";
+            document.getElementById("game-footer").style.display = "none";
             document.getElementById("lobby").style.display = "flex";
             
             window.opponentUsername = null;
