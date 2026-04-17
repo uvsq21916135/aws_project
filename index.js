@@ -11,8 +11,15 @@ const PORT = 3000;
 const https = require("https");
 const User = require("./backEnd/models/user");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 const { isValidMove, isAEatMove, hasPossibleJump, hasPossibleMove, arrivingAtLastRow } = require("./backEnd/rules");
 const { removePiece, becomeEldenLord } = require("./backEnd/utils");
+
+const authLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 20, // 20 tentatives max
+    message: { error: "Trop de tentatives. Veuillez réessayer plus tard." }
+});
 
 app.use(express.json());
 
@@ -37,9 +44,17 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "frontEnd", "lobby.html"));
 });
 
-app.post("/register", async (req, res) => {
+app.post("/register", authLimiter, async (req, res) => {
     try {
         const { username, password } = req.body;
+        
+        if (typeof username !== 'string' || typeof password !== 'string') {
+            return res.status(400).json({ error: "Format invalide" });
+        }
+        if (username.length > 20 || password.length > 100) {
+            return res.status(400).json({ error: "Pseudo ou mot de passe trop long" });
+        }
+
         const existingUser = await User.findOne({ username });
 
         if (existingUser) {
@@ -56,9 +71,17 @@ app.post("/register", async (req, res) => {
     }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", authLimiter, async (req, res) => {
     try {
         const { username, password } = req.body;
+        
+        if (typeof username !== 'string' || typeof password !== 'string') {
+            return res.status(400).json({ error: "Format invalide" });
+        }
+        if (username.length > 20 || password.length > 100) {
+            return res.status(400).json({ error: "Pseudo ou mot de passe erroné" }); // On ne dit pas "trop long" pour ne pas aider le pirate
+        }
+
         const user = await User.findOne({ username });
 
         if (!user) {
