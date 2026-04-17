@@ -51,6 +51,7 @@
         <ul id="user-list" style="list-style: none;"></ul>
     </div>
 
+    <div id="game-header" style="display: none; width: 100%; justify-content: center; margin-top: 20px;"></div>
     <div id="container" style="display: none;"></div>
 
     <script>
@@ -64,6 +65,7 @@
 
             const response = await fetch("/users");
             const users = await response.json();
+            window.allUsersInfo = users;
             
             const userList = document.getElementById("user-list");
             userList.innerHTML = "";
@@ -106,6 +108,33 @@
                 } else if (msg.type === "GAME_START") {
                     window.myPlayerId = msg.role;
                     window.opponentUsername = msg.opponent;
+                    
+                    const oppInfo = window.allUsersInfo ? window.allUsersInfo.find(u => u.username === msg.opponent) : null;
+                    const wins = oppInfo ? oppInfo.wins : '?';
+                    
+                    const header = document.getElementById("game-header");
+                    header.style.display = "flex";
+                    header.innerHTML = `
+                        <div style="display: flex; align-items: center; background: rgba(15, 23, 42, 0.8); padding: 10px 20px; border-radius: 12px; color: white; width: 100%; max-width: 530px; justify-content: space-between; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 45px; height: 45px; background: var(--accent-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);">
+                                    ${msg.opponent.charAt(0).toUpperCase()}
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                                    <span style="font-weight: 700; font-size: 1.2rem; letter-spacing: 0.5px;">${msg.opponent}</span>
+                                    <div style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px #10b981;"></span>
+                                        <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">En jeu</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px;">
+                                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Victoires</div>
+                                <div style="font-weight: 800; color: #facc15; font-size: 1.1rem;">🏆 ${wins}</div>
+                            </div>
+                        </div>
+                    `;
+
                     alert("Vous jouez les " + (msg.role === 1 ? "Blancs" : "Noirs") + " !");
 
                 } else if (msg.type === "OPPONENT_MOVE") {
@@ -163,6 +192,7 @@
 
         function returnToLobby() {
             document.getElementById("container").style.display = "none";
+            document.getElementById("game-header").style.display = "none";
             document.getElementById("lobby").style.display = "flex";
             
             window.opponentUsername = null;
