@@ -68,7 +68,8 @@
             const userList = document.getElementById("user-list");
             userList.innerHTML = "";
 
-            const socket = new WebSocket("wss://" + window.location.host);
+            const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const socket = new WebSocket(protocol + window.location.host);
             window.gameSocket = socket;
 
             socket.onopen = () => {

@@ -7,16 +7,22 @@ const fs = require("fs");
 const path = require("path");
 const mongoose = require("mongoose");
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const http = require("http");
 const https = require("https");
 const User = require("./backEnd/models/user");
 
 app.use(express.json());
 
-const privateKey = fs.readFileSync("key.pem");
-const certificate = fs.readFileSync("cert.pem");
+let credentials;
+try {
+    const privateKey = fs.readFileSync("key.pem");
+    const certificate = fs.readFileSync("cert.pem");
+    credentials = { key: privateKey, cert: certificate };
+} catch (e) {
+    console.log("Aucun certificat SSL trouvé (normal si hébergé sur Render). Serveur configuré en HTTP.");
+}
 
-const credentials = { key: privateKey, cert: certificate };
 const uri = process.env.MONGO_URI;
 
 async function updatePlayerStats(winnerUsername, loserUsername) {
@@ -100,10 +106,10 @@ app.get("/users", async (req, res) => {
     }
 });
 
-const DamesPointcom = https.createServer(credentials, app);
+const DamesPointcom = credentials ? https.createServer(credentials, app) : http.createServer(app);
 
 DamesPointcom.listen(PORT, () => {
-    console.log(`https server started on port ${PORT}`);
+    console.log(`Server started on port ${PORT} (${credentials ? "HTTPS" : "HTTP"})`);
 });
 
 const wss = new WebSocket.Server({ server: DamesPointcom });
