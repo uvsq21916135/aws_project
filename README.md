@@ -1,6 +1,4 @@
 # Dames en Ligne (Multi-Utilisateur)
-Thomas Godineau - 22204158
-Thibault Astier - 21916135
 
 ## Présentation du Projet
 Ce projet est une plateforme de **Jeu de Dames (plateau 10x10)** en ligne et en temps réel. Il permet aux utilisateurs de créer un compte, de se rejoindre dans un salon d'attente (Lobby) et de s'affronter en direct. L'interface offre un design moderne et fluide.
